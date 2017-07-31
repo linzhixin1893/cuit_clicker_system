@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.cuit.bean.Course;
 import com.cuit.bean.HomeWork;
+import com.cuit.bean.Score;
 import com.cuit.bean.Student;
 import com.cuit.bean.StudentLogReply;
 import com.cuit.db.JDBCUtils;
@@ -84,12 +85,10 @@ public class StudentManager {
 			int id = set.getInt("id");
 			reply.setStudentID(id);
 		}
-		
+		mDBUtil.closeStream(conn, statement, set);
 		if (reply.getStudentID() == -1) {
-			mDBUtil.closeStream(conn, statement, set);
 			return null;
 		}
-		mDBUtil.closeStream(conn, statement, set);
 		HashMap<String,Object> query2 = mDBUtil.query("student_course_info", "student_id = " + reply.getStudentID());
 		ResultSet set2 = (ResultSet) query2.get("set");
 		Statement statement2 = (Statement) query2.get("statement");
@@ -130,19 +129,37 @@ public class StudentManager {
 			ResultSet set3 = (ResultSet) query3.get("set");
 			Statement statement3 = (Statement) query3.get("statement");
 			Connection conn3 = (Connection) query3.get("conn");
-			
-			set3.next();
-			
-			HomeWork work = new HomeWork();
-			work.setId(set3.getInt("id"));
-			work.setCourseID(courseIDList.get(i));
-			work.setContent(set3.getString("work_content"));
-			work.setStartTime(set3.getString("start_time"));
-			work.setEndTime(set3.getString("end_time"));
-			reply.getHomeWork().add(work);
-			
+			while (set3.next()) {
+				HomeWork work = new HomeWork();
+				work.setId(set3.getInt("id"));
+				work.setCourseID(courseIDList.get(i));
+				work.setContent(set3.getString("work_content"));
+				work.setStartTime(set3.getString("start_time"));
+				work.setEndTime(set3.getString("end_time"));
+				reply.getHomeWork().add(work);
+				
+				
+			}
 			mDBUtil.closeStream(conn3, statement3, set3);
+
 		}
+		
+		HashMap<String,Object> query4 = mDBUtil.query("score", "student_id = " + reply.getStudentID());
+		ResultSet set4 = (ResultSet) query4.get("set");
+		Statement statement4 = (Statement) query4.get("statement");
+		Connection conn4 = (Connection) query4.get("conn");
+		while (set4.next()){
+			Score score = new Score();
+			score.setCourseID(set4.getInt("course_id"));
+			score.setId(set4.getInt("id"));
+			score.setNum(set4.getString("num"));
+			score.setReason(set4.getString("reason"));
+			score.setStudentID(reply.getStudentID());
+			score.setTime(set4.getString("score_time"));
+			
+			reply.getScore().add(score);
+		}
+		mDBUtil.closeStream(conn4, statement4, set4);
 		return reply;
 	}
 

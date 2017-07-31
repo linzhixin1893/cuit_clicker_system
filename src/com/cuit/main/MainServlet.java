@@ -12,13 +12,17 @@ import javax.servlet.http.HttpServletResponse;
 import com.cuit.bean.Course;
 import com.cuit.bean.Student;
 import com.cuit.bean.StudentLogReply;
+import com.cuit.bean.Teacher;
+import com.cuit.bean.TeacherLogReply;
 import com.cuit.manager.StudentManager;
+import com.cuit.manager.TeacherManager;
 import com.google.gson.Gson;
 import com.cuit.util.*;
 
 public class MainServlet extends HttpServlet {
 
 	private StudentManager mStudentManager = new StudentManager();
+	private TeacherManager mTeacherManager = new TeacherManager();
 	
 	/**
 	 * Constructor of the object.
@@ -134,11 +138,48 @@ public class MainServlet extends HttpServlet {
 			/**
 			 * 教师注册，有教室端发起
 			 */
+			String json = request.getParameter("param");
+			if (Util.isEmptyOrNull(json)) {
+				out.print("param is null");
+				out.flush();
+				out.close();
+				return;
+			}
+			Teacher teacher = new Gson().fromJson(json, Teacher.class);
+			System.out.println(new Gson().toJson(teacher));
+			String res = null;
+			try {
+				res = mTeacherManager.register(teacher);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			out.print(res);
 		} else if ("teacher_log".equals(action)) {
 			/**
 			 * 教师登录，获取所有课程、和该课程的所有学生
 			 * 由教室端发起
 			 */
+			String phone = request.getParameter("phone");
+			String code = request.getParameter("code");
+			TeacherLogReply teacherLogReply = null;
+			try {
+				teacherLogReply = mTeacherManager.log(phone, code);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (teacherLogReply == null) {
+				out.print("Log Failed");
+			} else {
+				out.print(new Gson().toJson(teacherLogReply));
+			}
 		} else if ("upload_score".equals(action)) {
 			/**
 			 * 上传学生得分，由教室端发起
