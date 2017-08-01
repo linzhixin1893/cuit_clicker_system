@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.cuit.bean.Course;
+import com.cuit.bean.Score;
 import com.cuit.bean.Student;
 import com.cuit.bean.Teacher;
 import com.cuit.bean.TeacherLogReply;
+import com.cuit.bean.TeacherUploadScore;
 import com.cuit.db.JDBCUtils;
 import com.cuit.util.Util;
 
@@ -128,5 +130,30 @@ public class TeacherManager {
 		
 		return reply;
 	}
+	public String insertScore(TeacherUploadScore uploadScore) throws ClassNotFoundException, SQLException {
+		mDBUtil = JDBCUtils.getInstance();
+		String res = "succeed";
+		for (int i = 0; i < uploadScore.getScore().size(); i++) {
+			Score score = uploadScore.getScore().get(i);
+			boolean insert = mDBUtil.insert(
+					"score",
+					new String[]{"student_id", "course_id", "num", "reason", "score_time"},
+					new String[]{
+							score.getStudentID() + "",
+							score.getCourseID() + "",
+							Util.getDBParam(score.getNum()),
+							Util.getDBParam(score.getReason()),
+							Util.getDBParam(score.getTime()),
+					}
+			);
+			if (!insert) {
+				res = "failed";
+				break;
+			}
+		}
+		return res;
+	}
+	
+
 
 }

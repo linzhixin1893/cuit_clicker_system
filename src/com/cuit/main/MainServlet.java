@@ -14,6 +14,7 @@ import com.cuit.bean.Student;
 import com.cuit.bean.StudentLogReply;
 import com.cuit.bean.Teacher;
 import com.cuit.bean.TeacherLogReply;
+import com.cuit.bean.TeacherUploadScore;
 import com.cuit.manager.StudentManager;
 import com.cuit.manager.TeacherManager;
 import com.google.gson.Gson;
@@ -184,6 +185,25 @@ public class MainServlet extends HttpServlet {
 			/**
 			 * 上传学生得分，由教室端发起
 			 */
+			String json = request.getParameter("score");
+			if (Util.isEmptyOrNull(json)) {
+				out.print("param is null");
+				out.flush();
+				out.close();
+				return;
+			}
+			TeacherUploadScore uploadScore = new Gson().fromJson(json, TeacherUploadScore.class);
+			String res = null;
+			try {
+				res = mTeacherManager.insertScore(uploadScore);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			out.print(res);
 		} else if ("student_add_course".equals(action)) {
 			/**
 			 * 学生选课程
